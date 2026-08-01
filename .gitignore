@@ -1,0 +1,19 @@
+# Environment variables (secrets - never commit)
+.env
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+db.sqlite3
+
+# Django
+staticfiles/
+media/
+
+# VS Code
+.vscode/
+
+# OS files
+.DS_Store
+Thumbs.db
