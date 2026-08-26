@@ -24,4 +24,5 @@ Thumbs.db
 # Frontend dependencies and build output
 node_modules/
 dist/
+.vite/
 .pnpm-store/
