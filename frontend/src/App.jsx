@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 
+const API_URL = '/api/status/';
+
 // Custom CSS styles specifically for the App layout
 const inlineStyles = `
   .hero-container {
@@ -296,7 +298,6 @@ const inlineStyles = `
 export default function App() {
   const [backendStatus, setBackendStatus] = useState('checking');
   const [apiDetails, setApiDetails] = useState(null);
-  const [apiUrl, setApiUrl] = useState('http://localhost:8000/api/status/');
 
   useEffect(() => {
     // Inject custom CSS styles dynamically
@@ -304,17 +305,11 @@ export default function App() {
     styleElement.innerHTML = inlineStyles;
     document.head.appendChild(styleElement);
 
-    // Dynamically match current protocol (HTTP/HTTPS) and host to prevent Mixed Content errors
-    const protocol = window.location.protocol;
-    const hostname = window.location.hostname;
-    const currentApiUrl = `${protocol}//${hostname}:8000/api/status/`;
-    setApiUrl(currentApiUrl);
-
-    // Call local Django REST API status endpoint
+    // Use the same-origin API route so the reverse proxy can route requests to Django.
     const checkStatus = async () => {
       try {
         const start = performance.now();
-        const response = await fetch(currentApiUrl);
+        const response = await fetch(API_URL);
         const duration = (performance.now() - start).toFixed(0);
 
         if (response.ok) {
@@ -536,7 +531,7 @@ export default function App() {
               </tr>
               <tr>
                 <td>Django API Endpoint</td>
-                <td>{apiUrl}</td>
+                <td>{API_URL}</td>
               </tr>
               {backendStatus === 'connected' && apiDetails ? (
                 <>
