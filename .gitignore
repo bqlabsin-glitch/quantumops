@@ -17,3 +17,11 @@ media/
 # OS files
 .DS_Store
 Thumbs.db
+
+# Project Docs / Plan files
+*.docx
+
+# Frontend dependencies and build output
+node_modules/
+dist/
+.pnpm-store/

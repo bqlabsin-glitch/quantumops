@@ -16,7 +16,9 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
+from quantumops.views import system_status
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('api/status/', system_status, name='system_status'),
 ]
