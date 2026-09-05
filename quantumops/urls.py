@@ -15,10 +15,11 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path
+from django.urls import include, path
 from quantumops.views import system_status
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/status/', system_status, name='system_status'),
+    path('api/', include('ops.urls')),
 ]

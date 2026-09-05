@@ -20,6 +20,8 @@ Thumbs.db
 
 # Project Docs / Plan files
 *.docx
+!003.BQLabs-AI-generated.docx
+!004.QuantumOPS.docx
 
 # Frontend dependencies and build output
 node_modules/
