@@ -6,7 +6,7 @@ This document is a Markdown compilation of the project plan and introduction ext
 
 ## 1. BQ Labs: Company Introduction
 
-**BQ Labs (Bhairav Quantum Labs)** is a company that develops products to help users increase productivity using state-of-the-art technology.
+**BQ Labs** develops products that help users increase productivity using state-of-the-art technology.
 
 ### Vision
 * **AI-Enabled Organization**: Integrate AI into all products and workflows.

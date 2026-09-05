@@ -1,0 +1,16 @@
+{% extends "admin/index.html" %}
+
+{% block content %}
+  {{ block.super }}
+  <div class="module" style="margin-top: 24px;">
+    <table>
+      <caption>Operations</caption>
+      <tbody>
+        <tr>
+          <th scope="row"><a href="{% url 'system_status_page' %}">System status</a></th>
+          <td>View protected application and database diagnostics.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+{% endblock %}

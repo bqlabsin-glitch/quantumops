@@ -16,9 +16,10 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import include, path
-from quantumops.views import system_status
+from quantumops.views import system_status, system_status_page
 
 urlpatterns = [
+    path('admin/system-status/', system_status_page, name='system_status_page'),
     path('admin/', admin.site.urls),
     path('api/status/', system_status, name='system_status'),
     path('api/', include('ops.urls')),

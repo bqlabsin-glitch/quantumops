@@ -1,0 +1,21 @@
+{% extends "admin/base_site.html" %}
+
+{% block title %}System status | BQ Labs administration{% endblock %}
+
+{% block content %}
+<div id="content-main">
+  <h1>System status</h1>
+  <p>This page is restricted to authenticated staff members.</p>
+  <div class="module" style="margin-top: 24px; max-width: 720px;">
+    <table style="width: 100%;">
+      <caption>Application diagnostics</caption>
+      <tbody>
+        <tr><th scope="row">Application</th><td>{{ system_status.status|title }}</td></tr>
+        <tr><th scope="row">Database</th><td>{{ system_status.db_status }}</td></tr>
+        <tr><th scope="row">Django version</th><td>{{ system_status.django_version }}</td></tr>
+        <tr><th scope="row">Server</th><td>{{ system_status.server }}</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
