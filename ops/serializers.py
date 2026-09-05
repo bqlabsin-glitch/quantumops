@@ -4,6 +4,8 @@ from django.db import transaction
 from rest_framework import serializers
 
 from .models import (
+    ClientAccount,
+    ClientMembership,
     LeaveRequest,
     Membership,
     Organization,
@@ -12,6 +14,8 @@ from .models import (
     ProjectMembership,
     Task,
     TaskTester,
+    Team,
+    TeamMembership,
     UATObservation,
 )
 from .services import audit
@@ -22,15 +26,16 @@ User = get_user_model()
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ("id", "username", "email", "first_name", "last_name")
+        fields = ("id", "username", "email", "first_name", "last_name", "is_staff")
 
 
 class RegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, trim_whitespace=False)
+    otp = serializers.CharField(write_only=True, min_length=6, max_length=6)
 
     class Meta:
         model = User
-        fields = ("username", "email", "first_name", "last_name", "password")
+        fields = ("email", "first_name", "last_name", "password", "otp")
 
     def validate_email(self, value):
         value = value.strip().lower()
@@ -43,6 +48,8 @@ class RegisterSerializer(serializers.ModelSerializer):
         return value
 
     def create(self, validated_data):
+        validated_data.pop("otp", None)
+        validated_data["username"] = validated_data["email"]
         return User.objects.create_user(**validated_data)
 
 
@@ -58,11 +65,46 @@ class OrganizationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Organization
-        fields = ("id", "name", "slug", "status", "timezone", "current_role")
+        fields = ("id", "name", "slug", "status", "timezone", "current_role", "created_at")
+        read_only_fields = ("slug", "status", "current_role", "created_at")
 
     def get_current_role(self, obj):
         membership = next((m for m in obj.memberships.all() if m.user_id == self.context["request"].user.id), None)
         return membership.role if membership else None
+
+
+class ClientAccountSerializer(serializers.ModelSerializer):
+    current_role = serializers.SerializerMethodField()
+    project_count = serializers.IntegerField(read_only=True)
+
+    class Meta:
+        model = ClientAccount
+        fields = ("id", "organization", "name", "code", "current_role", "project_count", "is_active", "created_at")
+        read_only_fields = ("current_role", "project_count", "created_at")
+
+    def get_current_role(self, obj):
+        membership = next((m for m in obj.memberships.all() if m.user_id == self.context["request"].user.id), None)
+        return membership.role if membership else None
+
+
+class TeamSerializer(serializers.ModelSerializer):
+    owner_name = serializers.CharField(source="owner.get_full_name", read_only=True)
+    lead_name = serializers.CharField(source="lead.get_full_name", read_only=True)
+
+    class Meta:
+        model = Team
+        fields = ("id", "organization", "name", "owner", "owner_name", "lead", "lead_name", "created_at")
+        read_only_fields = ("owner", "created_at")
+
+
+class ProjectMembershipSerializer(serializers.ModelSerializer):
+    user_name = serializers.CharField(source="user.get_full_name", read_only=True)
+    user_email = serializers.EmailField(source="user.email", read_only=True)
+
+    class Meta:
+        model = ProjectMembership
+        fields = ("id", "project", "user", "user_name", "user_email", "role", "is_active", "created_at")
+        read_only_fields = ("created_at",)
 
 
 class ProjectSerializer(serializers.ModelSerializer):
@@ -70,10 +112,11 @@ class ProjectSerializer(serializers.ModelSerializer):
     completed_count = serializers.IntegerField(read_only=True)
     organization_name = serializers.CharField(source="organization.name", read_only=True)
     team_name = serializers.CharField(source="team.name", read_only=True)
+    client_name = serializers.CharField(source="client.name", read_only=True)
 
     class Meta:
         model = Project
-        fields = ("id", "organization", "organization_name", "team", "team_name", "name", "code", "description", "visibility", "client_leave_approval", "timezone", "working_days", "is_active", "task_count", "completed_count")
+        fields = ("id", "organization", "organization_name", "client", "client_name", "team", "team_name", "name", "code", "description", "visibility", "client_leave_approval", "timezone", "working_days", "is_active", "task_count", "completed_count")
         read_only_fields = ("organization",)
 
     def validate_working_days(self, value):
@@ -127,9 +170,10 @@ class TaskSerializer(serializers.ModelSerializer):
 
 
 class TaskTesterSerializer(serializers.ModelSerializer):
+    user_name = serializers.CharField(source="user.get_full_name", read_only=True)
     class Meta:
         model = TaskTester
-        fields = ("id", "task", "user", "is_main", "accepted_at")
+        fields = ("id", "task", "user", "user_name", "is_main", "accepted_at")
         read_only_fields = ("accepted_at",)
 
 

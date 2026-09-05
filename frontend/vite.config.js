@@ -9,6 +9,12 @@ export default defineConfig({
     port: 3000,
     watch: {
       usePolling: true
+    },
+    proxy: {
+      '/api': {
+        target: process.env.VITE_API_PROXY || 'http://web:8000',
+        changeOrigin: false
+      }
     }
   }
 })

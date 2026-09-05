@@ -177,3 +177,14 @@ REST_FRAMEWORK = {
     'DEFAULT_THROTTLE_CLASSES': ('rest_framework.throttling.UserRateThrottle',),
     'DEFAULT_THROTTLE_RATES': {'user': '600/hour', 'auth': '10/minute'},
 }
+
+EMAIL_BACKEND = os.environ.get('EMAIL_BACKEND', 'django.core.mail.backends.smtp.EmailBackend')
+EMAIL_HOST = os.environ.get('EMAIL_HOST', '')
+EMAIL_PORT = int(os.environ.get('EMAIL_PORT', '587'))
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
+EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS', 'True') == 'True'
+DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'Quantum OPS <no-reply@bqlabs.in>')
+HUMAN_CHALLENGE_SECRET = os.environ.get('HUMAN_CHALLENGE_SECRET', '')
+HUMAN_CHALLENGE_VERIFY_URL = os.environ.get('HUMAN_CHALLENGE_VERIFY_URL', 'https://challenges.cloudflare.com/turnstile/v0/siteverify')
+FRONTEND_ORIGIN = os.environ.get('FRONTEND_ORIGIN', 'http://localhost:3000').rstrip('/')

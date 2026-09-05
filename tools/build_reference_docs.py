@@ -212,6 +212,48 @@ def add_consolidated_phase2_decisions(doc):
     add_steps(doc, ["BQ Labs internal pilot.", "One controlled client pilot.", "Security, performance, accessibility, and usability correction cycle.", "Controlled multi-organization release with explicit gates."])
 
 
+def add_secure_self_service_and_admin_update(doc):
+    doc.add_heading("Authenticated self service and platform administration", 1)
+    doc.add_paragraph("Quantum OPS uses ordinary bookmarkable application paths. The public BQ Labs site remains at the root, while every workspace screen verifies an authenticated server session before displaying operational content. Authorization is enforced independently on every API endpoint.")
+    add_table(doc, ["Path", "Purpose and access"], [
+        ("/quantum-ops/login", "Secure account sign in."),
+        ("/quantum-ops/register", "Self-service account creation using mandatory email verification and an optional adaptive human challenge."),
+        ("/quantum-ops/setup", "Authenticated setup for workspace, client, team, project, and email-bound invitations."),
+        ("/quantum-ops/dashboard", "Role-scoped operating overview."),
+        ("/quantum-ops/tasks", "Task queue, creation, assignment, acceptance, and start-work actions."),
+        ("/quantum-ops/uat", "Tester assignment, tester acceptance, and observation management."),
+        ("/quantum-ops/leave", "Leave and comp-off requests with project impact."),
+        ("/quantum-ops/admin", "BQ Labs staff-only administration for account activity, plan usage, and block or restore controls."),
+    ], [2.05, 4.45])
+    doc.add_heading("Self service operating model", 2)
+    add_bullets(doc, [
+        "Any genuine user can create an account after email verification, then create one Starter workspace and become its owner.",
+        "The owner can create the first client, team, and up to two Starter projects, then invite members, Testers, client viewers, or client approvers by verified email.",
+        "Initial Starter safeguards are one client, two projects, five users, 250 active tasks, and 100 MB of attachments. Increasing limits requires BQ Labs approval until payment is implemented.",
+        "Project invitations are email-bound, expiring, non-replayable, and grant only the selected project role.",
+        "Internal members see only tasks they own, are assigned, or are explicitly testing unless a scoped lead or management role grants a broader view.",
+        "Task assignees explicitly accept proposed work before the client sees any state beyond Not Started.",
+        "A Task Owner, working member, Team Owner, or Team Lead can nominate Testers. Only an assigned Tester can accept, and only an accepted Tester can raise an observation.",
+        "Ordinary members see their own leave records; authorized owners, administrators, management, and relevant Team Leads may see the project-planning view.",
+    ])
+    doc.add_heading("BQ Labs administration", 2)
+    add_bullets(doc, [
+        "The Quantum OPS administration page is available only after login and only to active staff accounts controlled by BQ Labs.",
+        "It shows registered and active users, last-login activity, task ownership and assignment counts, workspace state, plan, and quota utilization.",
+        "A BQ Labs administrator can block or restore another user. The API validates the action and writes an immutable audit event.",
+        "Administrators cannot block their own current account, reducing accidental platform lockout risk.",
+        "Payment, invoicing, and self-service renewal remain deferred; this page exposes the plan and usage data required for that future phase.",
+    ])
+    doc.add_heading("Release acceptance additions", 2)
+    add_bullets(doc, [
+        "Opening a protected friendly URL without a valid session redirects to /quantum-ops/login and returns no workspace data.",
+        "A non-staff account receives HTTP 403 from every platform administration endpoint even when the URL is guessed.",
+        "A staff administrator can view plan usage and block or restore another account but cannot block themselves.",
+        "Member selectors contain only active members of the selected project, with server-side assignment validation.",
+        "Tester acceptance and observation creation follow the approved assignment rules and remain protected by API authorization.",
+    ])
+
+
 def build_bqlabs():
     d = Document(); setup(d, "BQ Labs - Product and Brand Brief")
     title(d, "AI-generated strategy brief", "BQ Labs", "Identity, product direction, and public-platform principles", "Approved baseline; update as the company and product portfolio evolve")
@@ -294,6 +336,7 @@ def build_bqlabs():
     d.add_heading("8. Open decisions", 1)
     add_bullets(d, ["Final public positioning statement and primary audience.", "Product naming and subdomain convention.", "Support, privacy, and legal publication readiness.", "AI governance owner and approved model/provider policy.", "Company-registration and claims review before public commercialization."])
     add_final_design_blueprint(d, compact=True)
+    add_secure_self_service_and_admin_update(d)
     d.save(ROOT / "003.BQLabs-AI-generated.docx")
 
 
@@ -525,6 +568,7 @@ def build_quantumops():
     d.add_paragraph("Living-reference control: every approved or modified plan decision must be reflected in both 003.BQLabs-AI-generated.docx and 004.QuantumOPS.docx. Keep the two documents synchronized even when one update is only a governance note or cross-reference.")
     add_consolidated_phase2_decisions(d)
     add_final_design_blueprint(d, compact=False)
+    add_secure_self_service_and_admin_update(d)
     d.save(ROOT / "004.QuantumOPS.docx")
 
 

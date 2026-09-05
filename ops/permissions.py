@@ -1,6 +1,8 @@
 from rest_framework.exceptions import PermissionDenied
 
-from .models import Membership, ProjectMembership
+from django.db.models import Q
+
+from .models import ClientMembership, Membership, Project
 
 
 def organization_membership(user, organization_id):
@@ -26,7 +28,8 @@ def accessible_project_ids(user):
         is_active=True,
         role__in=(Membership.Role.OWNER, Membership.Role.ADMIN, Membership.Role.MANAGEMENT),
     ).values_list("organization_id", flat=True)
-    direct_projects = ProjectMembership.objects.filter(
-        user=user, is_active=True
-    ).values_list("project_id", flat=True)
+    direct_projects = Project.objects.filter(
+        Q(memberships__user=user, memberships__is_active=True) |
+        Q(client__memberships__user=user, client__memberships__is_active=True, client__memberships__role__in=(ClientMembership.Role.OWNER, ClientMembership.Role.MANAGER))
+    ).values_list("id", flat=True)
     return elevated_orgs, direct_projects

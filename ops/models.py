@@ -53,6 +53,34 @@ class Organization(TimeStampedModel):
     max_attachment_bytes = models.PositiveBigIntegerField(default=2 * 1024 * 1024 * 1024)
 
 
+class ClientAccount(TimeStampedModel):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name="clients")
+    name = models.CharField(max_length=180)
+    code = models.SlugField(max_length=60)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="created_clients")
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=("organization", "code"), name="unique_client_code_in_org")]
+        indexes = [models.Index(fields=("organization", "is_active"))]
+
+
+class ClientMembership(TimeStampedModel):
+    class Role(models.TextChoices):
+        OWNER = "OWNER", "Client owner"
+        MANAGER = "MANAGER", "Client manager"
+        MEMBER = "MEMBER", "Member"
+
+    client = models.ForeignKey(ClientAccount, on_delete=models.CASCADE, related_name="memberships")
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="client_memberships")
+    role = models.CharField(max_length=16, choices=Role.choices, default=Role.MEMBER)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=("client", "user"), name="unique_client_membership")]
+
+
 class Membership(TimeStampedModel):
     class Role(models.TextChoices):
         OWNER = "OWNER", "Organization owner"
@@ -98,6 +126,7 @@ class Project(TimeStampedModel):
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name="projects")
+    client = models.ForeignKey(ClientAccount, on_delete=models.PROTECT, related_name="projects", null=True, blank=True)
     team = models.ForeignKey(Team, on_delete=models.PROTECT, related_name="projects")
     name = models.CharField(max_length=180)
     code = models.CharField(max_length=20)
@@ -280,3 +309,38 @@ class AuditEvent(models.Model):
 
     def delete(self, *args, **kwargs):
         raise ValidationError("Audit events are immutable.")
+
+
+class EmailVerificationChallenge(TimeStampedModel):
+    email = models.EmailField(db_index=True)
+    purpose = models.CharField(max_length=32, default="REGISTRATION")
+    code_hash = models.CharField(max_length=160)
+    expires_at = models.DateTimeField()
+    attempts = models.PositiveSmallIntegerField(default=0)
+    consumed_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        indexes = [models.Index(fields=("email", "purpose", "expires_at"))]
+
+
+class Invitation(TimeStampedModel):
+    class Scope(models.TextChoices):
+        ORGANIZATION = "ORGANIZATION", "Organization"
+        CLIENT = "CLIENT", "Client"
+        PROJECT = "PROJECT", "Project"
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name="invitations")
+    client = models.ForeignKey(ClientAccount, null=True, blank=True, on_delete=models.CASCADE, related_name="invitations")
+    project = models.ForeignKey(Project, null=True, blank=True, on_delete=models.CASCADE, related_name="invitations")
+    invited_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="sent_invitations")
+    email = models.EmailField()
+    scope = models.CharField(max_length=16, choices=Scope.choices)
+    role = models.CharField(max_length=24)
+    token_hash = models.CharField(max_length=160)
+    expires_at = models.DateTimeField()
+    accepted_at = models.DateTimeField(null=True, blank=True)
+    revoked_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        indexes = [models.Index(fields=("email", "expires_at")), models.Index(fields=("organization", "created_at"))]
