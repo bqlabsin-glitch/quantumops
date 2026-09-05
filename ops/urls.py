@@ -26,6 +26,8 @@ urlpatterns = [
     path("invitations/", views.invite),
     path("invitations/accept/", views.accept_invitation),
     path("platform-admin/summary/", views.platform_admin_summary),
+    path("platform-admin/email/", views.platform_email_settings),
+    path("platform-admin/email/test/", views.platform_email_test),
     path("platform-admin/users/<int:user_id>/status/", views.platform_admin_user_status),
     path("", include(router.urls)),
 ]

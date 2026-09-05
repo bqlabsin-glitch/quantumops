@@ -17,6 +17,36 @@ from .serializers import ClientAccountSerializer, LeaveRequestSerializer, Organi
 from .services import audit, consume_email_otp, issue_email_otp, issue_invitation, token_digest, verify_human_challenge
 
 User = get_user_model()
+from .models import PlatformEmailSettings
+from .email_config import EmailSettingsSerializer, send_platform_email
+
+
+@api_view(["GET", "PUT"])
+def platform_email_settings(request):
+    require_platform_admin(request.user)
+    instance = PlatformEmailSettings.objects.filter(pk=1).first() or PlatformEmailSettings(pk=1)
+    if request.method == "PUT":
+        serializer = EmailSettingsSerializer(instance, data=request.data)
+        serializer.is_valid(raise_exception=True)
+        with transaction.atomic():
+            serializer.save()
+            audit(actor=request.user, action="platform.email_settings_updated", obj=instance)
+    response = Response(EmailSettingsSerializer(instance).data)
+    response["Cache-Control"] = "no-store"
+    return response
+
+
+@api_view(["POST"])
+def platform_email_test(request):
+    require_platform_admin(request.user)
+    if not request.user.email:
+        raise ValidationError("Add an email address to your administrator account first.")
+    try:
+        send_platform_email("Quantum OPS email test", "Your Quantum OPS email configuration is working.", [request.user.email])
+    except (OSError, BadHeaderError):
+        return Response({"detail": "Test delivery failed. Check that delivery is enabled and the host, port, sender and credentials are correct."}, status=503)
+    audit(actor=request.user, action="platform.email_test_sent", obj=request.user)
+    return Response({"detail": "Test email sent to your administrator email address."})
 
 
 def require_platform_admin(user):

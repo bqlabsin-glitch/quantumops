@@ -213,6 +213,8 @@ def add_consolidated_phase2_decisions(doc):
 
 
 def add_secure_self_service_and_admin_update(doc):
+    doc.add_heading("Administrator email configuration", 1)
+    doc.add_paragraph("BQ Labs staff can configure SMTP host, port, encrypted connection mode, sender address, username and password in Quantum OPS administration. Configuration can be saved disabled and completed later. Passwords are encrypted in the database and are never returned by the API; a blank password preserves the current credential. A test action sends to the current administrator email using saved settings. Settings changes and successful tests are audited without credentials. Registration codes and invitations use this configuration and require enabled delivery. The server secret must be retained securely alongside encrypted backups to allow credential recovery.")
     doc.add_heading("Authenticated self service and platform administration", 1)
     doc.add_paragraph("Quantum OPS uses ordinary bookmarkable application paths. The public BQ Labs site remains at the root, while every workspace screen verifies an authenticated server session before displaying operational content. Authorization is enforced independently on every API endpoint.")
     add_table(doc, ["Path", "Purpose and access"], [

@@ -18,6 +18,17 @@ class TimeStampedModel(models.Model):
         abstract = True
 
 
+class PlatformEmailSettings(TimeStampedModel):
+    id = models.PositiveSmallIntegerField(primary_key=True, default=1, editable=False)
+    enabled = models.BooleanField(default=False)
+    host = models.CharField(max_length=253, blank=True)
+    port = models.PositiveIntegerField(default=587)
+    username = models.CharField(max_length=254, blank=True)
+    password_encrypted = models.TextField(blank=True)
+    security = models.CharField(max_length=8, default="STARTTLS", choices=(("STARTTLS", "STARTTLS"), ("SSL", "SSL")))
+    from_email = models.EmailField(blank=True)
+
+
 class OrganizationRequest(TimeStampedModel):
     class Status(models.TextChoices):
         PENDING = "PENDING", "Pending review"

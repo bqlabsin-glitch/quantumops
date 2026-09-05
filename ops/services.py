@@ -12,6 +12,7 @@ from django.utils import timezone
 from django.utils.text import slugify
 
 from .models import AuditEvent, EmailVerificationChallenge, Invitation, Membership, Organization, OrganizationRequest
+from .email_config import send_platform_email
 
 
 def audit(*, actor, action, obj, organization=None, metadata=None):
@@ -84,12 +85,10 @@ def issue_email_otp(email):
         code_hash=make_password(code),
         expires_at=timezone.now() + timedelta(minutes=10),
     )
-    send_mail(
+    send_platform_email(
         "Your Quantum OPS verification code",
         f"Your Quantum OPS verification code is {code}. It expires in 10 minutes. If you did not request it, ignore this message.",
-        settings.DEFAULT_FROM_EMAIL,
         [normalized],
-        fail_silently=False,
     )
     return challenge
 
@@ -127,11 +126,9 @@ def issue_invitation(*, organization, invited_by, email, scope, role, client=Non
         expires_at=timezone.now() + timedelta(days=7),
     )
     link = f"{settings.FRONTEND_ORIGIN}/quantum-ops/invitations/accept?token={raw_token}"
-    send_mail(
+    send_platform_email(
         f"You are invited to {organization.name} on Quantum OPS",
         f"{invited_by.get_full_name() or invited_by.email} invited you to Quantum OPS. Accept within 7 days: {link}",
-        settings.DEFAULT_FROM_EMAIL,
         [invitation.email],
-        fail_silently=False,
     )
     return invitation

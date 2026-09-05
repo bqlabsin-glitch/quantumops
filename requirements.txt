@@ -6,3 +6,4 @@ django-redis
 python-dotenv
 djangorestframework
 django-cors-headers
+cryptography>=43
